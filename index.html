@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biên Lai Điện Nước - KTX IUH</title>
+    <!-- Tailwind CSS for utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        iuh: {
+                            navy: '#003B7A',
+                            blue: '#0056B3',
+                            lightBg: '#F0F4F8',
+                            tableBg: '#F7FAFC',
+                            headerBlue: '#EBF3FA',
+                            textDark: '#1A202C',
+                            border: '#DCE6F1',
+                            gold: '#FEF3C7',
+                            goldText: '#D97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #eef2f7;
+        }
+        .iuh-gradient {
+            background: linear-gradient(135deg, #002D5E 0%, #0056B3 100%);
+        }
+        /* Custom scrollbar for table */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800 pb-12 flex flex-col items-center">
+
+    <!-- IUH Header Bar -->
+    <header class="w-full iuh-gradient text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-1.5 rounded-lg shadow-inner">
+                    <svg class="w-8 h-8 text-[#003B7A]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xs tracking-wider uppercase opacity-90 text-blue-100">ĐẠI HỌC CÔNG NGHIỆP TP. HỒ CHÍ MINH</h1>
+                    <p class="font-extrabold text-sm text-yellow-300">PHÒNG QUẢN LÝ KÝ TÚC XÁ</p>
+                </div>
+            </div>
+            <button onclick="toggleSettingsModal()" class="p-2 rounded-full hover:bg-white/10 transition text-yellow-300" title="Cài đặt định mức & đơn giá">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-md px-3 sm:px-4 mt-4 space-y-4">
+
+        <!-- Daily Reading Input Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-iuh-border p-4">
+            <div class="flex items-center justify-between mb-3 border-b pb-2">
+                <h2 class="font-bold text-iuh-navy text-sm uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-iuh-blue"></i>
+                    Nhập Chỉ Số Điện Nước Hôm Nay
+                </h2>
+                <span id="currentDateBadge" class="text-xs bg-blue-50 text-iuh-blue font-semibold px-2 py-0.5 rounded-full border border-blue-100">
+                    --/--/----
+                </span>
+            </div>
+
+            <form id="dailyForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                <!-- Date input -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Ngày ghi số</label>
+                    <input type="date" id="inputDate" required class="w-full text-sm p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iuh-blue focus:border-iuh-blue outline-none transition">
+                </div>
+
+                <!-- Electric Reading -->
+                <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100/80">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-iuh-navy flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt text-yellow-500"></i>
+                            Số Điện Hôm Nay (kWh)
+                        </label>
+                        <span class="text-[11px] font-medium text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                            Ngày trước: <strong id="prevElectricDisplay" class="text-iuh-blue font-bold">0</strong> kWh
+                        </span>
+                    </div>
+                    <input type="number" id="electricToday" step="any" required placeholder="Nhập chỉ số điện hôm nay..." 
+                           class="w-full text-base font-semibold p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-iuh-blue outline-none">
+                </div>
+
+                <!-- Water Reading -->
+                <div class="p-3 bg-cyan-50/50 rounded-xl border border-cyan-100/80">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-iuh-navy flex items-center gap-1.5">
+                            <i class="fa-solid fa-droplet text-blue-500"></i>
+                            Số Nước Hôm Nay (m³)
+                        </label>
+                        <span class="text-[11px] font-medium text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                            Ngày trước: <strong id="prevWaterDisplay" class="text-iuh-blue font-bold">0</strong> m³
+                        </span>
+                    </div>
+                    <input type="number" id="waterToday" step="any" required placeholder="Nhập chỉ số nước hôm nay..." 
+                           class="w-full text-base font-semibold p-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-iuh-blue outline-none">
+                </div>
+
+                <button type="submit" class="w-full iuh-gradient text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:opacity-95 transition active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-calculator"></i>
+                    Tính & Tính Tổng Biên Lai
+                </button>
+            </form>
+        </div>
+
+        <!-- Main Receipt Display (Matches Image) -->
+        <div class="bg-white rounded-2xl shadow-md border border-iuh-border p-4 sm:p-5 relative overflow-hidden">
+            <!-- Top Receipt Title -->
+            <div class="mb-4 text-center border-b border-gray-100 pb-3">
+                <h2 id="receiptTitle" class="font-extrabold text-iuh-navy text-lg tracking-wide uppercase">
+                    BIÊN LAI ĐỢT <span id="receiptPeriod">--/----</span>
+                </h2>
+                <p class="text-[11px] text-gray-500 mt-0.5" id="receiptSubText">Biên lai tổng kết chi phí sinh hoạt ngày <span id="receiptDate">--/--/----</span></p>
+            </div>
+
+            <!-- Main Table Section -->
+            <div class="overflow-x-auto custom-scrollbar -mx-2 px-2">
+                <table class="w-full text-left border-collapse min-w-[310px]">
+                    <thead>
+                        <tr class="bg-iuh-headerBlue/60 text-iuh-navy text-[11px] sm:text-xs font-bold uppercase tracking-wider border-b-2 border-iuh-navy">
+                            <th class="py-2.5 px-2 text-center">TIÊU THỤ</th>
+                            <th class="py-2.5 px-1 text-center">ĐỊNH MỨC</th>
+                            <th class="py-2.5 px-1 text-center">VƯỢT ĐM</th>
+                            <th class="py-2.5 px-2 text-right">ĐƠN GIÁ</th>
+                            <th class="py-2.5 px-2 text-right">THÀNH TIỀN</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-xs sm:text-sm">
+                        <!-- Electric Row -->
+                        <tr class="hover:bg-gray-50/50 transition">
+                            <td class="py-3 px-2 text-center">
+                                <div class="font-semibold text-gray-800" id="elecUsage">0</div>
+                                <div class="text-[10px] text-gray-500 font-medium">kWh</div>
+                            </td>
+                            <td class="py-3 px-1 text-center">
+                                <div class="text-gray-700" id="elecQuota">70</div>
+                                <div class="text-[10px] text-gray-500 font-medium">kWh</div>
+                            </td>
+                            <td class="py-3 px-1 text-center">
+                                <div class="font-semibold text-gray-800" id="elecExcess">0</div>
+                                <div class="text-[10px] text-gray-500 font-medium">kWh</div>
+                            </td>
+                            <td class="py-3 px-2 text-right text-gray-600 font-medium" id="elecPrice">
+                                2,239đ
+                            </td>
+                            <td class="py-3 px-2 text-right font-bold text-gray-900" id="elecTotal">
+                                0đ
+                            </td>
+                        </tr>
+
+                        <!-- Water Row -->
+                        <tr class="hover:bg-gray-50/50 transition">
+                            <td class="py-3 px-2 text-center">
+                                <div class="font-semibold text-gray-800" id="waterUsage">0</div>
+                                <div class="text-[10px] text-gray-500 font-medium">m³</div>
+                            </td>
+                            <td class="py-3 px-1 text-center">
+                                <div class="text-gray-700" id="waterQuota">56</div>
+                                <div class="text-[10px] text-gray-500 font-medium">m³</div>
+                            </td>
+                            <td class="py-3 px-1 text-center">
+                                <div class="font-semibold text-gray-800" id="waterExcess">0</div>
+                                <div class="text-[10px] text-gray-500 font-medium">m³</div>
+                            </td>
+                            <td class="py-3 px-2 text-right text-gray-600 font-medium" id="waterPrice">
+                                9,205.8đ
+                            </td>
+                            <td class="py-3 px-2 text-right font-bold text-gray-900" id="waterTotal">
+                                0đ
+                            </td>
+                        </tr>
+
+                        <!-- Subtotal blank row matching UI -->
+                        <tr>
+                            <td colspan="4" class="py-2.5"></td>
+                            <td class="py-2.5 px-2 text-right font-bold text-gray-800" id="subTotalBlank">0đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total Amount Bar -->
+            <div class="mt-2 pt-3 border-t-2 border-iuh-navy flex justify-between items-center">
+                <span class="font-extrabold text-iuh-navy text-xs sm:text-sm uppercase tracking-wide">TỔNG THÀNH TIỀN</span>
+                <span id="grandTotal" class="font-extrabold text-iuh-blue text-base sm:text-lg">0đ</span>
+            </div>
+
+            <!-- Status Badge Section -->
+            <div class="mt-4 flex items-center gap-2">
+                <span class="font-extrabold text-gray-600 text-xs tracking-wider uppercase">TRẠNG THÁI:</span>
+                <span class="bg-iuh-gold text-iuh-goldText font-bold text-xs px-3 py-1 rounded-full shadow-sm">
+                    Chưa đóng
+                </span>
+            </div>
+
+            <!-- KTX Notice Box -->
+            <div class="mt-3 p-3 bg-amber-50/80 border-l-4 border-amber-400 rounded-r-lg text-xs text-amber-900 leading-relaxed relative">
+                <p class="font-medium">
+                    Sinh viên vui lòng thanh toán tiền điện, nước tại Văn phòng QLKTX chậm nhất trước ngày <strong id="dueDate">10/10/2026</strong>.
+                </p>
+                <!-- Zalo Floating Badge Style -->
+                <div class="absolute -right-2 -bottom-2 bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 border-2 border-white">
+                    <i class="fa-solid fa-comment-dots"></i> Zalo
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Log Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-iuh-border p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-iuh-navy text-xs uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-iuh-blue"></i>
+                    Lịch Sử Ghi Số Hàng Ngày
+                </h3>
+                <button onclick="clearHistory()" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+                </button>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 font-semibold border-b">
+                            <th class="p-2">Ngày</th>
+                            <th class="p-2 text-center">Điện (kWh)</th>
+                            <th class="p-2 text-center">Nước (m³)</th>
+                            <th class="p-2 text-right">Tổng tiền</th>
+                            <th class="p-2 text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-gray-100">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Settings (Định mức & Đơn giá) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-gray-100 transform transition-all">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-iuh-navy text-base flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-iuh-blue"></i>
+                    Cấu Hình Định Mức & Giá
+                </h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-3">
+                <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                    <h4 class="font-bold text-xs text-iuh-navy mb-2">ĐIỆN (kWh)</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] text-gray-600 block mb-0.5">Định mức</label>
+                            <input type="number" id="setElecQuota" required class="w-full p-1.5 border rounded text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-gray-600 block mb-0.5">Đơn giá vượt (đ)</label>
+                            <input type="number" step="any" id="setElecPrice" required class="w-full p-1.5 border rounded text-xs font-semibold">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-cyan-50/60 p-3 rounded-xl border border-cyan-100">
+                    <h4 class="font-bold text-xs text-iuh-navy mb-2">NƯỚC (m³)</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[11px] text-gray-600 block mb-0.5">Định mức</label>
+                            <input type="number" id="setWaterQuota" required class="w-full p-1.5 border rounded text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-gray-600 block mb-0.5">Đơn giá vượt (đ)</label>
+                            <input type="number" step="any" id="setWaterPrice" required class="w-full p-1.5 border rounded text-xs font-semibold">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="toggleSettingsModal()" class="w-1/2 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50">
+                        Hủy
+                    </button>
+                    <button type="submit" class="w-1/2 py-2 iuh-gradient text-white rounded-xl text-xs font-bold shadow hover:opacity-95">
+                        Lưu Cấu Hình
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Default Constants matching screenshot
+        const DEFAULT_CONFIG = {
+            elecQuota: 70,
+            elecPrice: 2239,
+            waterQuota: 56,
+            waterPrice: 9205.8
+        };
+
+        // Application State
+        let config = JSON.parse(localStorage.getItem('iuh_config')) || DEFAULT_CONFIG;
+        let historyData = JSON.parse(localStorage.getItem('iuh_history')) || [];
+
+        // Format currency function
+        function formatVND(amount) {
+            // Check if fraction exists
+            const hasFraction = amount % 1 !== 0;
+            return new Intl.NumberFormat('vi-VN', {
+                maximumFractionDigits: hasFraction ? 1 : 0
+            }).format(amount) + 'đ';
+        }
+
+        // Format date string to DD/MM/YYYY
+        function formatDateVN(dateString) {
+            if (!dateString) return '';
+            const [y, m, d] = dateString.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        // Initialize Page
+        window.onload = function() {
+            // Set today's date in input
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = today;
+            document.getElementById('currentDateBadge').innerText = formatDateVN(today);
+
+            // Populate previous values
+            updatePreviousReadings();
+
+            // Populate receipt template defaults
+            renderCurrentReceipt();
+
+            // Render History Table
+            renderHistoryTable();
+        };
+
+        // Update display of yesterday's meters
+        function updatePreviousReadings() {
+            if (historyData.length > 0) {
+                // Get most recent entry
+                const lastEntry = historyData[0];
+                document.getElementById('prevElectricDisplay').innerText = lastEntry.electricMeter;
+                document.getElementById('prevWaterDisplay').innerText = lastEntry.waterMeter;
+            } else {
+                document.getElementById('prevElectricDisplay').innerText = '0';
+                document.getElementById('prevWaterDisplay').innerText = '0';
+            }
+        }
+
+        // Form Submit Handler
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const inputDate = document.getElementById('inputDate').value;
+            const elecMeter = parseFloat(document.getElementById('electricToday').value) || 0;
+            const waterMeter = parseFloat(document.getElementById('waterToday').value) || 0;
+
+            // Get previous meters
+            let prevElec = 0;
+            let prevWater = 0;
+
+            if (historyData.length > 0) {
+                prevElec = historyData[0].electricMeter;
+                prevWater = historyData[0].waterMeter;
+            }
+
+            // Calculations
+            const elecUsage = Math.max(0, elecMeter - prevElec);
+            const waterUsage = Math.max(0, waterMeter - prevWater);
+
+            const elecExcess = Math.max(0, elecUsage - config.elecQuota);
+            const waterExcess = Math.max(0, waterUsage - config.waterQuota);
+
+            const elecTotal = elecExcess * config.elecPrice;
+            const waterTotal = waterExcess * config.waterPrice;
+            const grandTotal = elecTotal + waterTotal;
+
+            // Save record
+            const newRecord = {
+                id: Date.now(),
+                date: inputDate,
+                electricMeter: elecMeter,
+                waterMeter: waterMeter,
+                elecUsage: elecUsage,
+                waterUsage: waterUsage,
+                elecExcess: elecExcess,
+                waterExcess: waterExcess,
+                elecTotal: elecTotal,
+                waterTotal: waterTotal,
+                grandTotal: grandTotal,
+                configSnapshot: { ...config }
+            };
+
+            // Add to top of history
+            historyData.unshift(newRecord);
+            localStorage.setItem('iuh_history', JSON.stringify(historyData));
+
+            // Refresh UI
+            updatePreviousReadings();
+            renderCurrentReceipt(newRecord);
+            renderHistoryTable();
+
+            // Reset inputs except current state
+            document.getElementById('electricToday').value = '';
+            document.getElementById('waterToday').value = '';
+        }
+
+        // Render Receipt Card with data or snapshot
+        function renderCurrentReceipt(data = null) {
+            const activeData = data || (historyData.length > 0 ? historyData[0] : null);
+            const cfg = activeData ? (activeData.configSnapshot || config) : config;
+
+            // Update period date
+            const dateObj = activeData ? new Date(activeData.date) : new Date();
+            const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const yearStr = dateObj.getFullYear();
+
+            document.getElementById('receiptPeriod').innerText = `${monthStr}/${yearStr}`;
+            document.getElementById('receiptDate').innerText = activeData ? formatDateVN(activeData.date) : formatDateVN(new Date().toISOString().split('T')[0]);
+
+            // Set electric table row
+            const eUsage = activeData ? activeData.elecUsage : 267;
+            const eExcess = activeData ? activeData.elecExcess : Math.max(0, eUsage - cfg.elecQuota);
+            const eTotal = activeData ? activeData.elecTotal : (eExcess * cfg.elecPrice);
+
+            document.getElementById('elecUsage').innerText = eUsage;
+            document.getElementById('elecQuota').innerText = cfg.elecQuota;
+            document.getElementById('elecExcess').innerText = eExcess;
+            document.getElementById('elecPrice').innerText = formatVND(cfg.elecPrice);
+            document.getElementById('elecTotal').innerText = formatVND(eTotal);
+
+            // Set water table row
+            const wUsage = activeData ? activeData.waterUsage : 34;
+            const wExcess = activeData ? activeData.waterExcess : Math.max(0, wUsage - cfg.waterQuota);
+            const wTotal = activeData ? activeData.waterTotal : (wExcess * cfg.waterPrice);
+
+            document.getElementById('waterUsage').innerText = wUsage;
+            document.getElementById('waterQuota').innerText = cfg.waterQuota;
+            document.getElementById('waterExcess').innerText = wExcess;
+            document.getElementById('waterPrice').innerText = formatVND(cfg.waterPrice);
+            document.getElementById('waterTotal').innerText = formatVND(wTotal);
+
+            // Subtotal and Total
+            const grandTotal = eTotal + wTotal;
+            document.getElementById('subTotalBlank').innerText = formatVND(wTotal);
+            document.getElementById('grandTotal').innerText = formatVND(grandTotal);
+
+            // Calculate due date (e.g., 10th of next month)
+            const dueMonth = String((dateObj.getMonth() + 2) > 12 ? 1 : dateObj.getMonth() + 2).padStart(2, '0');
+            const dueYear = dateObj.getMonth() + 2 > 12 ? yearStr + 1 : yearStr;
+            document.getElementById('dueDate').innerText = `10/${dueMonth}/${dueYear}`;
+        }
+
+        // Render History Table
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (historyData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-4 text-center text-gray-400 italic">Chưa có dữ liệu lịch sử ghi số.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            historyData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition border-b border-gray-100';
+                tr.innerHTML = `
+                    <td class="p-2 font-medium text-gray-800">${formatDateVN(item.date)}</td>
+                    <td class="p-2 text-center">${item.electricMeter} <span class="text-[10px] text-gray-500">(+${item.elecUsage})</span></td>
+                    <td class="p-2 text-center">${item.waterMeter} <span class="text-[10px] text-gray-500">(+${item.waterUsage})</span></td>
+                    <td class="p-2 text-right font-bold text-iuh-blue">${formatVND(item.grandTotal)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="deleteRecord(${item.id})" class="text-red-400 hover:text-red-600 px-1" title="Xóa">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Delete a record
+        function deleteRecord(id) {
+            historyData = historyData.filter(item => item.id !== id);
+            localStorage.setItem('iuh_history', JSON.stringify(historyData));
+            updatePreviousReadings();
+            renderCurrentReceipt();
+            renderHistoryTable();
+        }
+
+        // Clear all history
+        function clearHistory() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử ghi số không?')) {
+                historyData = [];
+                localStorage.removeItem('iuh_history');
+                updatePreviousReadings();
+                renderCurrentReceipt();
+                renderHistoryTable();
+            }
+        }
+
+        // Settings Modal Handlers
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('hidden');
+
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('setElecQuota').value = config.elecQuota;
+                document.getElementById('setElecPrice').value = config.elecPrice;
+                document.getElementById('setWaterQuota').value = config.waterQuota;
+                document.getElementById('setWaterPrice').value = config.waterPrice;
+            }
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            config.elecQuota = parseFloat(document.getElementById('setElecQuota').value) || 0;
+            config.elecPrice = parseFloat(document.getElementById('setElecPrice').value) || 0;
+            config.waterQuota = parseFloat(document.getElementById('setWaterQuota').value) || 0;
+            config.waterPrice = parseFloat(document.getElementById('setWaterPrice').value) || 0;
+
+            localStorage.setItem('iuh_config', JSON.stringify(config));
+            toggleSettingsModal();
+            renderCurrentReceipt();
+        }
+    </script>
+</body>
+</html>
